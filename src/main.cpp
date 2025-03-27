@@ -47,9 +47,15 @@ void setup() {
 }
 
 void loop() {
-  readDHT20();
-  
-  delay(1000);
+  static unsigned long lastDHTReadTime = 0;
+  unsigned long currentMillis = millis();
+
+  // Run readDHT20 every 1 second without blocking delay()
+  if (currentMillis - lastDHTReadTime >= 1000) {
+    readDHT20();
+    lastDHTReadTime = currentMillis;
+  }
+
   if (!reconnect()) {
     return;
   }
