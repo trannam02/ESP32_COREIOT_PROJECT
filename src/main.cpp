@@ -3,7 +3,7 @@
 #include <Arduino_MQTT_Client.h>
 #include <Server_Side_RPC.h>
 #include <ThingsBoard.h>
-#include <DHT20.h>
+#include <DHT.h>
 
 #define SDA_PIN GPIO_NUM_11
 #define SCL_PIN GPIO_NUM_12
@@ -26,7 +26,7 @@ constexpr uint8_t MAX_RPC_RESPONSE = 10U;
 
 WiFiClient espClient;
 Arduino_MQTT_Client mqttClient(espClient);
-DHT20 DHT(&Wire);
+DHT dht;
 
 // Initialize used apis
 Server_Side_RPC<MAX_RPC_SUBSCRIPTIONS, MAX_RPC_RESPONSE> rpc;
@@ -36,38 +36,39 @@ const std::array<IAPI_Implementation*, 1U> apis = {
 ThingsBoard tb(mqttClient, MAX_MESSAGE_RECEIVE_SIZE, MAX_MESSAGE_SEND_SIZE, Default_Max_Stack_Size, apis);
 
 void InitWiFi();
-void readDHT20();
+void readDHT11();
 bool reconnect();
 
 void setup() {
   Serial.begin(SERIAL_DEBUG_BAUD);
   delay(1000);
-  InitWiFi();
-  Wire.begin(SDA_PIN, SCL_PIN);
+  // InitWiFi();
+  dht.setup(6);
 }
 
 void loop() {
-  static unsigned long lastDHTReadTime = 0;
-  unsigned long currentMillis = millis();
+  // static unsigned long lastDHTReadTime = 0;
+  // unsigned long currentMillis = millis();
 
   // Run readDHT20 every 1 second without blocking delay()
-  if (currentMillis - lastDHTReadTime >= 1000) {
-    readDHT20();
-    lastDHTReadTime = currentMillis;
-  }
+  // if (currentMillis - lastDHTReadTime >= 1000) {
+  //   readDHT20();
+  //   lastDHTReadTime = currentMillis;
+  // }
+  readDHT11();
+  delay(1000);
+  // if (!reconnect()) {
+  //   return;
+  // }
 
-  if (!reconnect()) {
-    return;
-  }
-
-  if (!tb.connected()) {
-    Serial.printf("Connecting to: (%s) with token (%s)\n", THINGSBOARD_SERVER, TOKEN);
-    if (!tb.connect(THINGSBOARD_SERVER, TOKEN, THINGSBOARD_PORT)) {
-      Serial.println("Failed to connect");
-      return;
-    }
-  }
-  tb.loop();
+  // if (!tb.connected()) {
+  //   Serial.printf("Connecting to: (%s) with token (%s)\n", THINGSBOARD_SERVER, TOKEN);
+  //   if (!tb.connect(THINGSBOARD_SERVER, TOKEN, THINGSBOARD_PORT)) {
+  //     Serial.println("Failed to connect");
+  //     return;
+  //   }
+  // }
+  // tb.loop();
 }
 
 
@@ -80,10 +81,13 @@ void InitWiFi() {
   }
   Serial.println("Connected to AP");
 }
-void readDHT20(){
-  int status = DHT.read();
-  tb.sendTelemetryData("temperature", DHT.getTemperature());
-  tb.sendTelemetryData("humidity", DHT.getHumidity());
+void readDHT11(){
+  float temp = dht.getTemperature();
+  float humi = dht.getHumidity();
+  Serial.printf("Temperature: %f", temp);
+  Serial.printf(" - Humidity: %f", humi);
+  tb.sendTelemetryData("temperature", temp);
+  tb.sendTelemetryData("humidity", humi);
 }
 bool reconnect() {
   const wl_status_t status = WiFi.status();
