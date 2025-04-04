@@ -87,10 +87,11 @@ void processNeon(const JsonVariantConst &data, JsonDocument &response){
   const int switch_state = data["key"];
   Serial.printf("Example switch state: %d", switch_state);
 };
-void task_readDHT20(void *pvParameters) {
+void task_turn_led_on_5s(void *pvParameters) {
   while (1) {
-    // readDHT11();
     Serial.printf("LED is: %s\n", (myLED ? "ON" : "OFF"));
+    int led_state = myLED ? 255 : 0;
+    neopixelWrite(45, led_state, led_state, led_state);
     light_count -= 1;
     if(light_count <= 0){
       myLED = 0;
@@ -153,7 +154,7 @@ void setup() {
   
   
   xTaskCreate(task_connect, "My Connection Establish", 4096, NULL, 2, NULL);
-  xTaskCreate(task_readDHT20, "Read DHT20", 4096, NULL, 1, NULL);
+  xTaskCreate(task_turn_led_on_5s, "Read DHT20", 4096, NULL, 1, NULL);
   
 }
 
