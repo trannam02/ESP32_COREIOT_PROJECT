@@ -26,11 +26,10 @@ constexpr uint8_t MAX_ATTRIBUTES = 10U;
 
 
 constexpr char CURRENT_FIRMWARE_TITLE[] = "blinky_firmware_ota";
-constexpr char CURRENT_FIRMWARE_VERSION[] = "1.0.0";
+constexpr char CURRENT_FIRMWARE_VERSION[] = "2.0.0";
 
-// Maximum amount of retries we attempt to download each firmware chunck over MQTT
 constexpr uint8_t FIRMWARE_FAILURE_RETRIES = 12U;
-
-// Size of each firmware chunck downloaded over MQTT,
-// increased packet size, might increase download speed
 constexpr uint16_t FIRMWARE_PACKET_SIZE = 4096U;
+
+// MY VARIABLES
+int blinking_frequency = 5;
